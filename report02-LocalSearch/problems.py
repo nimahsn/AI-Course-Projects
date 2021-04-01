@@ -17,15 +17,17 @@ class Problem:
         pass
 
 class NQueens(Problem):
-    def __init__(self, n:int, init_queens: List[int] = None) -> None:
+    def __init__(self, n:int, queens: List[int] = None, init_queens: List[int] = None) -> None:
         super().__init__()
         self.n = n
-        self.queens = init_queens
-        if init_queens is None:
+        self.queens = queens
+        if queens is None:
             self.queens = []
             for _ in range(n):
                 self.queens.append(randint(0, n-1))
-
+        self.init_queens = init_queens
+        if (init_queens is None):
+            self.init_queens = self.queens
     
     def get_all_childs(self):
         for i in range(self.n):
@@ -35,7 +37,7 @@ class NQueens(Problem):
                     continue
                 new_qs = deepcopy(self.queens)
                 new_qs[i] = j
-                yield NQueens(self.n, new_qs)
+                yield NQueens(self.n, new_qs, init_queens=self.init_queens)
     
     def get_cost(self) -> int:
         attacks = 0

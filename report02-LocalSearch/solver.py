@@ -1,4 +1,5 @@
-from heapq import heapify, heappop, heappush
+from heapq import heapify, heappop, heappush, heapreplace
+from typing import List, Sequence
 from problems import NQueens, Problem
 import math
 
@@ -6,7 +7,7 @@ class HillClimb:
     def __init__(self) -> None:
         pass
 
-    def solve(self, problem: Problem):
+    def solve(self, problem: "Problem"):
         while True:
             if problem.is_goal():
                 return problem
@@ -24,14 +25,31 @@ class HillClimb:
                 
 
 class BeamSearch:
-    def __init__(self, k: int) -> None:
-        self.k = k
-        self.heap = []
-        heapify(self.heap)
-        pass
+    def __init__(self, beam: int) -> None:
+        self.k = beam
   
-    def solve(self, prblem: Problem):
-        pass
+    def solve(self, initial_states: List["Problem"]):
+        sequence = [None]*self.k
+        for i,prob in enumerate(initial_states):
+            sequence[i] = (prob.get_cost(), i, prob)
+        entry = self.k        
+        sequence.sort()
 
-hl = HillClimb()
-print(hl.solve(NQueens(8)))
+        while True:
+            if sequence[0][2].is_goal():
+                return sequence[0][2]
+            heap = []
+            updated = False
+            for state in sequence:
+                heappush(heap, state)
+                for child in state[2].get_all_childs():
+                    child_cost = child.get_cost()
+                    if child_cost < state[0]:
+                        heappush(heap, (child_cost, entry, child))
+                        entry += 1
+                        updated = True
+            if not updated:
+                return sequence[0][2]
+            for i in range(self.k):
+                sequence[i] = heappop(heap)
+            del heap
