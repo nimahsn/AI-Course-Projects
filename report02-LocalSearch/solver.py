@@ -1,6 +1,7 @@
 from heapq import heapify, heappop, heappush, heapreplace
-from typing import List, Sequence
+from typing import Callable, List, Sequence
 from problems import NQueens, Problem
+from random import random
 import math
 
 class HillClimb:
@@ -53,3 +54,37 @@ class BeamSearch:
             for i in range(self.k):
                 sequence[i] = heappop(heap)
             del heap
+
+class SimulatedAnnealing:
+    def __init__(self, min_temp: float = 1e-6, max_iter: int = 1000, scale_factor: int = 1.01) -> None:
+        self.max_iter = max_iter
+        self.min_temp = min_temp
+        self.scale = scale_factor    
+
+    def solve(self, problem: Problem, init_temp: int):
+        iter = 0
+        for temp in self.scheduler(init_temp, self.scale):
+            if problem.is_goal() or iter >= self.max_iter or temp < self.min_temp:
+                return problem
+            # print("iter: {}, temp: {}, cost: {}".format(iter, temp, problem.get_cost()))
+            iter += 1
+            random_child = problem.get_random_child()
+            new_cost = random_child.get_cost()
+            curr_cost = problem.get_cost()
+            if new_cost < curr_cost:
+                problem = random_child
+                continue
+            else:
+                prob = math.exp((curr_cost - new_cost)/temp)
+                toss = random()
+                if (toss <= prob):
+                    problem = random_child
+                continue
+    
+    def scheduler(self, init_temp: int, scale: float):
+        # iter = 1
+        new_temp = init_temp
+        while True:
+            new_temp = new_temp/scale
+            # iter += 1
+            yield new_temp

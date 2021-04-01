@@ -1,4 +1,4 @@
-from abc import abstractclassmethod, abstractmethod
+from abc import abstractclassmethod, abstractmethod, abstractproperty
 from typing import List 
 from random import randint
 from copy import deepcopy
@@ -16,8 +16,12 @@ class Problem:
     def is_goal(self) -> bool:
         pass
 
+    @abstractmethod
+    def get_random_child(self) -> "Problem":
+        pass
+
 class NQueens(Problem):
-    def __init__(self, n:int, queens: List[int] = None, init_queens: List[int] = None) -> None:
+    def __init__(self, n: int, queens: List[int] = None, init_queens: List[int] = None) -> None:
         super().__init__()
         self.n = n
         self.queens = queens
@@ -53,8 +57,16 @@ class NQueens(Problem):
                     continue
         return attacks
 
-    def is_goad(self) -> bool:
+    def is_goal(self) -> bool:
         return self.get_cost() == 0
+
+    def get_random_child(self) -> "Problem":
+        rand_col = randint(0, self.n-1)
+        rand_row = randint(0, self.n-1)
+        new_qs = deepcopy(self.queens)
+        new_qs[rand_col] = rand_row
+        return NQueens(self.n, new_qs, self.init_queens)
+
 
     def __repr__(self) -> str:
         s = ""
