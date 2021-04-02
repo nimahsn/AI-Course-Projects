@@ -1,6 +1,6 @@
 from heapq import heapify, heappop, heappush, heapreplace
 from typing import Callable, List, Sequence
-from problems import NQueens, Problem
+from problems import Problem
 from random import random
 import math
 
