@@ -110,7 +110,13 @@ class SimulatedAnnealing:
             log = SolverLog()
             start_time_ns = time.time_ns()
         iter = 0
+        curr_cost = problem.get_cost()
+
         for temp in self.scheduler(init_temp, self.scale):
+            if self.save_log:
+                log.costs.append(curr_cost)
+                log.depth += 1
+                log.temperatures.append(temp)
             if problem.is_goal() or iter >= self.max_iter or temp < self.min_temp:
                 if self.save_log:
                     log.elapsed_time = time.time_ns() - start_time_ns
@@ -121,18 +127,18 @@ class SimulatedAnnealing:
             random_child = problem.get_random_child()
             new_cost = random_child.get_cost()
             curr_cost = problem.get_cost()
-            if self.save_log:
-                log.costs.append(curr_cost)
-                log.depth += 1
-                log.temperatures.append(temp)
             if new_cost < curr_cost:
                 problem = random_child
+                curr_cost = new_cost
                 continue
             else:
                 prob = math.exp((curr_cost - new_cost)/temp)
                 toss = random()
                 if (toss <= prob):
                     problem = random_child
+                    curr_cost = new_cost
+                elif self.save_log:
+                    log.depth -= 1
                 continue
     
     def scheduler(self, init_temp: int, scale: float):
