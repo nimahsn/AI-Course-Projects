@@ -53,7 +53,7 @@ class NQueens(Problem):
             curr_row = self.queens[curr_column]
             for next_column in range(curr_column + 1, self.n):
                 next_row = self.queens[next_column]
-                if (next_row == curr_row):
+                if next_row == curr_row:
                     attacks += 1
                     continue
                 if abs(next_column - curr_column) == abs(next_row - curr_row):
