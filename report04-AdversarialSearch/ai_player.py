@@ -3,7 +3,7 @@ from board import Board
 import math
 
 class PlayerAlphaBeta():
-    def __init__(self, black: bool, opponent: "PlayerAlphaBeta" = None, cut_off_depth: int = 3) -> None:
+    def __init__(self, black: bool, cut_off_depth: int = 3, opponent: "PlayerAlphaBeta" = None) -> None:
         self.black = black
         self.markers_out = 9
         self.markers_in = 0
