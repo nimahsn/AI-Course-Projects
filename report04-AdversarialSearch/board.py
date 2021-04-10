@@ -206,7 +206,11 @@ class Board:
                     bcp.black_markers_in -= 1
                     bcp.black_markers_captured +=1
                 yield bcp
-
+    
+    def is_terminal(self):
+        if self.phase == 3 and (self.white_marker_in == 2 or self.black_markers_in == 2):
+            return True
+        else: return False
 
 
 class Action:
