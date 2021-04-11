@@ -13,14 +13,14 @@ class PlayerAlphaBeta():
         self.cut_depth = cut_off_depth
 
     def alpha_beta_search(self, state: "Board") -> "Board":
-        score, new_state = self.max_value(state, -math.inf, math.inf)
+        score, new_state = self.max_value(state, -math.inf, math.inf, 1)
 
-    def max_value(self, state: "Board", alpha: int, beta: int) -> Tuple[int, "Board"]:
-        if self.cut_off_test(state):
+    def max_value(self, state: "Board", alpha: int, beta: int, depth: int) -> Tuple[int, "Board"]:
+        if self.cut_off_test(state, depth):
             pass
         v = (-math.inf, None)
         for new_state in state.get_all_moves(self):
-            (score_minval, state_minval) = self.min_value(new_state, alpha, beta)
+            (score_minval, state_minval) = self.min_value(new_state, alpha, beta, depth+1)
             max_value = max(v[0], score_minval)
             if max_value == v[0]:
                 pass
@@ -32,12 +32,12 @@ class PlayerAlphaBeta():
         return v
             
 
-    def min_value(self, state: "Board", alpha: int, beta: int) -> Tuple[int, "Board"]:
-        if self.cut_off_test(state):
+    def min_value(self, state: "Board", alpha: int, beta: int, depth: int) -> Tuple[int, "Board"]:
+        if self.cut_off_test(state, depth):
             pass
         v = (math.inf, None)
         for new_state in state.get_all_moves(self.opponent):
-            (score_maxval, state_maxval) = self.max_value(new_state, alpha, beta)
+            (score_maxval, state_maxval) = self.max_value(new_state, alpha, beta, depth+1)
             min_value = min(v[0], score_maxval)
             if min_value == v[0]:
                 pass
