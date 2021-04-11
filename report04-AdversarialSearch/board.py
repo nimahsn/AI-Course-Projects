@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 from copy import deepcopy
-from ai_player import PlayerAlphaBeta
+# from ai_player import PlayerAlphaBeta
 
 
 adjacent_dict = {
@@ -14,7 +14,7 @@ adjacent_dict = {
     (3,4):[(2,4), (3,3), (3,5)],
     (3,5):[(3,4), (4,5)],
     (4,1):[(4,2), (1,1), (7,1)],
-    (4,2):[(4,1), (4,3), (3,2), (6,2)],
+    (4,2):[(4,1), (4,3), (2,2), (6,2)],
     (4,3):[(4,2), (3,3), (5,3)],
     (4,5):[(3,5), (5,5), (4,6)],
     (4,6):[(4,5), (2,6), (6,6), (4,7)],
@@ -46,7 +46,7 @@ mill_dict = {
     (4,5): [[(4,6), (4,7)], [(3,5), (5,5)]],
     (4,6): [[(4,5), (4,7)], [(2,6), (6,6)]],
     (4,7): [[(4,5), (4,6)], [(1,7), (7,7)]],
-    (5,3): [[(3,3), (4,3)], [(5,4), (5,6)]],
+    (5,3): [[(3,3), (4,3)], [(5,4), (5,5)]],
     (5,4): [[(5,3), (5,5)], [(6,4), (7,4)]],
     (5,5): [[(5,3), (5,4)], [(3,5), (4,5)]],
     (6,2): [[(6,4), (6,6)], [(4,2), (2,2)]],
@@ -76,8 +76,12 @@ ACTION_FLY_MILL = 6
 
 
 class Board:
-    def __init__(self, phase: int, dict_markers = {}) -> None:
+    def __init__(self, phase: int = 1, dict_markers = None) -> None:
         self.pos_marker_dict: Dict[Tuple[int, int], "Marker"] = dict_markers
+        if self.pos_marker_dict == None:
+            self.pos_marker_dict = {}
+            for pos in positions:
+                self.pos_marker_dict[pos] = None
         self.phase = phase
         self.black_markers_out = 9
         self.white_marker_out = 9
@@ -90,7 +94,7 @@ class Board:
         self.last_move_is_black: bool = None
         self.last_move_type: int = None
     
-    def get_all_moves(self, player: "PlayerAlphaBeta"):
+    def get_all_moves(self, player):
         if self.phase == 1:
             for move in self.get_all_moves_phase1(player):
                 yield move
@@ -103,7 +107,7 @@ class Board:
 
     def get_all_moves_phase1(self, player):
         for pos in positions:
-            if self.pos_marker_dict == None:
+            if self.pos_marker_dict[pos] is None:
                 new_marker = Marker(black=player.black, position=pos)
                 # action = Action(place_action, marker=new_marker, new_pos=pos)
                 # yield action
@@ -111,24 +115,27 @@ class Board:
                 board_cpy.last_move_is_black = player.black
                 board_cpy.pos_marker_dict[pos] = new_marker
                 if player.black:
-                    self.black_markers_in += 1
-                    self.black_markers_out -= 1
+                    board_cpy.black_markers_in += 1
+                    board_cpy.black_markers_out -= 1
                 else:
-                    self.white_marker_in += 1
-                    self.white_marker_out -= 1
+                    board_cpy.white_markers_in += 1
+                    board_cpy.white_marker_out -= 1
+
+                if board_cpy.black_markers_out == 0 and b.white_marker_out == 0:
+                    board_cpy.phase = 2 
+
                 if board_cpy.is_mill(pos, player.black):
                     if player.black:
                         board_cpy.black_mills += 1
                     else:
-                        board_cpy.white_mills += 1
-                    
+                        board_cpy.white_mills += 1                   
+
                     for b in board_cpy.remove_opp_marker(player):
                         b.last_move_type = ACTION_PLACE_MILL
                         yield b
                     continue
                 board_cpy.last_move_type = ACTION_PLACE
                 yield board_cpy
-        
         
 
     def get_all_moves_phase2(self, player):
@@ -170,7 +177,7 @@ class Board:
         if black and self.black_markers_in > 3:
             for b in self.get_all_moves_phase2(player):
                 yield b
-        elif not black and self.white_marker_in > 3:
+        elif not black and self.white_markers_in > 3:
             for b in self.get_all_moves_phase2(player):
                 yield b
         else:
@@ -205,7 +212,10 @@ class Board:
 
     def is_mill(self, position, black) -> bool:
         for l in mill_dict[position]:
-            if self.pos_marker_dict[l[0]].black == black and self.pos_marker_dict[l[1]].black == black:
+            if self.pos_marker_dict[l[0]] is not None\
+                and self.pos_marker_dict[l[1]] is not None\
+                    and self.pos_marker_dict[l[0]].black == black\
+                        and self.pos_marker_dict[l[1]].black == black:
                 return True
         return False
 
@@ -225,28 +235,32 @@ class Board:
             bcp = deepcopy(self)
             bcp.pos_marker_dict[pos] = None
             if black:
-                bcp.white_marker_in -= 1
+                bcp.white_markers_in -= 1
                 bcp.white_markers_captured +=1
             else:
                 bcp.black_markers_in -= 1
                 bcp.black_markers_captured +=1
+            if bcp.phase == 2 and (bcp.white_markers_in == 2 or bcp.black_markers_in == 2):
+                bcp.phase = 3
             yield bcp
         if found == False:
             for pos in l:
                 bcp = deepcopy(self)
                 bcp.pos_marker_dict[pos] = None
                 if black:
-                    bcp.white_marker_in -= 1
+                    bcp.white_markers_in -= 1
                     bcp.white_markers_captured +=1
                     bcp.white_mills -= 1
                 else:
                     bcp.black_markers_in -= 1
                     bcp.black_markers_captured +=1
                     bcp.black_mills += 1
+                if bcp.phase == 2 and (bcp.white_markers_in == 2 or bcp.black_markers_in == 2):
+                    bcp.phase = 3
                 yield bcp
     
     def is_terminal(self):
-        if self.phase == 3 and (self.white_marker_in == 2 or self.black_markers_in == 2):
+        if self.phase == 3 and (self.white_markers_in == 2 or self.black_markers_in == 2):
             return True
         else: return False
 
