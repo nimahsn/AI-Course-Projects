@@ -67,10 +67,12 @@ positions = [
     (7,1), (7,4), (7,7)
 ]
 
-place_action = 1
-move_action = 2
-move_and_capture_action = 3
-fly_action = 4
+ACTION_PLACE = 1
+ACTION_PLACE_MILL = 2
+ACTION_MOVE = 3
+ACTION_MOVE_MILL = 4
+ACTIION_FLY = 5
+ACTION_FLY_MILL = 6
 
 
 class Board:
@@ -83,6 +85,10 @@ class Board:
         self.white_markers_in = 0
         self.white_markers_captured = 0
         self.black_markers_captured = 0
+        self.white_mills = 0
+        self.black_mills = 0
+        self.last_move_is_black: bool = None
+        self.last_move_type: int = None
     
     def get_all_moves(self, player: "PlayerAlphaBeta"):
         if self.phase == 1:
@@ -102,6 +108,7 @@ class Board:
                 # action = Action(place_action, marker=new_marker, new_pos=pos)
                 # yield action
                 board_cpy = deepcopy(self)
+                board_cpy.last_move_is_black = player.black
                 board_cpy.pos_marker_dict[pos] = new_marker
                 if player.black:
                     self.black_markers_in += 1
@@ -110,9 +117,16 @@ class Board:
                     self.white_marker_in += 1
                     self.white_marker_out -= 1
                 if board_cpy.is_mill(pos, player.black):
+                    if player.black:
+                        board_cpy.black_mills += 1
+                    else:
+                        board_cpy.white_mills += 1
+                    
                     for b in board_cpy.remove_opp_marker(player):
+                        b.last_move_type = ACTION_PLACE_MILL
                         yield b
                     continue
+                board_cpy.last_move_type = ACTION_PLACE
                 yield board_cpy
         
         
@@ -125,17 +139,30 @@ class Board:
             m = self.pos_marker_dict[pos]
             if m.black != black:
                 continue
+            lost_mill = self.is_mill(pos, black)
             for new_pos in m.get_moves:
                 if self.pos_marker_dict[new_pos] is not None:
                     continue
                 bcp = deepcopy(self)
+                bcp.last_move_is_black = black
+                if lost_mill:
+                    if black:
+                        bcp.black_mills -= 1
+                    else:
+                        bcp.white_mills -= 1
                 new_m = Marker(black, new_pos)
                 bcp.pos_marker_dict[new_pos] = new_m
                 bcp.pos_marker_dict[pos] = None
                 if bcp.is_mill(pos, black):
+                    if black:
+                        bcp.black_mills += 1
+                    else:
+                        bcp.white_mills += 1
                     for b in bcp.remove_opp_marker(player):
+                        b.last_move_type = ACTION_MOVE_MILL
                         yield b
                     continue
+                bcp.last_move_type = ACTION_MOVE
                 yield bcp
 
     def get_all_moves_phase3(self, player):
@@ -153,17 +180,26 @@ class Board:
                 m = self.pos_marker_dict[pos]
                 if m.black != black:
                     continue
+                lost_mill = self.is_mill(pos, black)
                 for new_pos in positions:
                     if self.pos_marker_dict[new_pos] is not None:
                         continue
                     bcp = deepcopy(self)
+                    bcp.last_move_is_black = black
+                    if lost_mill:
+                        if black:
+                            bcp.black_mills -= 1
+                        else:
+                            bcp.white_mills -= 1
                     new_m = Marker(black, new_pos)
                     bcp.pos_marker_dict[new_pos] = new_m
                     bcp.pos_marker_dict[pos] = None
                     if bcp.is_mill(pos, black):
                         for b in bcp.remove_opp_marker(player):
+                            b.last_move_type = ACTION_FLY_MILL
                             yield b
                         continue
+                    bcp.last_move_type = ACTIION_FLY
                     yield bcp
                     
 
@@ -202,9 +238,11 @@ class Board:
                 if black:
                     bcp.white_marker_in -= 1
                     bcp.white_markers_captured +=1
+                    bcp.white_mills -= 1
                 else:
                     bcp.black_markers_in -= 1
                     bcp.black_markers_captured +=1
+                    bcp.black_mills += 1
                 yield bcp
     
     def is_terminal(self):
