@@ -121,7 +121,7 @@ class Board:
                     board_cpy.white_markers_in += 1
                     board_cpy.white_marker_out -= 1
 
-                if board_cpy.black_markers_out == 0 and b.white_marker_out == 0:
+                if board_cpy.black_markers_out == 0 and board_cpy.white_marker_out == 0:
                     board_cpy.phase = 2 
 
                 if board_cpy.is_mill(pos, player.black):
@@ -147,7 +147,7 @@ class Board:
             if m.black != black:
                 continue
             lost_mill = self.is_mill(pos, black)
-            for new_pos in m.get_moves:
+            for new_pos in m.get_moves():
                 if self.pos_marker_dict[new_pos] is not None:
                     continue
                 bcp = deepcopy(self)
@@ -160,13 +160,15 @@ class Board:
                 new_m = Marker(black, new_pos)
                 bcp.pos_marker_dict[new_pos] = new_m
                 bcp.pos_marker_dict[pos] = None
-                if bcp.is_mill(pos, black):
+                if bcp.is_mill(new_pos, black):
                     if black:
                         bcp.black_mills += 1
                     else:
                         bcp.white_mills += 1
                     for b in bcp.remove_opp_marker(player):
                         b.last_move_type = ACTION_MOVE_MILL
+                        if b.white_markers_in == 3 or b.black_markers_in == 3:
+                            b.phase=3
                         yield b
                     continue
                 bcp.last_move_type = ACTION_MOVE
@@ -201,7 +203,7 @@ class Board:
                     new_m = Marker(black, new_pos)
                     bcp.pos_marker_dict[new_pos] = new_m
                     bcp.pos_marker_dict[pos] = None
-                    if bcp.is_mill(pos, black):
+                    if bcp.is_mill(new_pos, black):
                         for b in bcp.remove_opp_marker(player):
                             b.last_move_type = ACTION_FLY_MILL
                             yield b
@@ -264,6 +266,25 @@ class Board:
             return True
         else: return False
 
+    def __repr__(self) -> str:
+        s = ""
+        dic = self.pos_marker_dict
+        def helper(m: "Marker"):
+            if m is None:
+                return "  "
+            if m.black:
+                return "BB"
+            else:
+                return "WW"
+        s+="\n"
+        s += "{}-------------{}-------------{}\n".format(helper(dic[(1,1)]), helper(dic[(1,4)]), helper(dic[(1,7)]))
+        s += "-----{}--------{}--------{}-----\n".format(helper(dic[(2,2)]), helper(dic[(2,4)]), helper(dic[(2,6)]))
+        s += "----------{}---{}---{}----------\n".format(helper(dic[(3,3)]), helper(dic[(3,4)]), helper(dic[(3,5)]))
+        s += "{}---{}---{}        {}---{}---{}\n".format(helper(dic[(4,1)]), helper(dic[(4,2)]), helper(dic[(4,3)]),helper(dic[(4,5)]), helper(dic[(4,6)]), helper(dic[(4,7)]))
+        s += "----------{}---{}---{}----------\n".format(helper(dic[(5,3)]), helper(dic[(5,4)]), helper(dic[(5,5)]))
+        s += "-----{}--------{}--------{}-----\n".format(helper(dic[(6,2)]), helper(dic[(6,4)]), helper(dic[(6,6)]))
+        s += "{}-------------{}-------------{}\n".format(helper(dic[(7,1)]), helper(dic[(7,4)]), helper(dic[(7,7)]))
+        return s
 
 class Action:
     def __init__(self, type, marker, new_pos, capture: "Marker"=None) -> None:
