@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from board import Board, Marker, ACTION_FLY_MILL, ACTION_MOVE, ACTION_MOVE_MILL, ACTION_PLACE, ACTION_PLACE_MILL, ACTIION_FLY, positions, mill_dict
 import math
+from random import shuffle
 
 class PlayerAlphaBeta():
     def __init__(self, black: bool, evaluator: "Evaluator", cut_off_depth: int = 3, opponent: "PlayerAlphaBeta" = None) -> None:
@@ -12,40 +13,67 @@ class PlayerAlphaBeta():
         self.opponent = opponent
         self.cut_depth = cut_off_depth
         self.evaluator = evaluator
+        self._alpha = 0
+        self._beta = 0
+        self.crashes = []
 
     def alpha_beta_search(self, state: "Board") -> "Board":
+        # self._alpha = -math.inf
+        # self._beta = math.inf
         score, new_state = self.max_value(state, -math.inf, math.inf, 1)
         return score, new_state
 
     def max_value(self, state: "Board", alpha: int, beta: int, depth: int) -> Tuple[int, "Board"]:
-        # print(depth)
         if self.cut_off_test(state, depth):
             return (self.evaluator.evaluate(state, self.black), state)
         v = (-math.inf, None)
-        for new_state in state.get_all_moves(self):
-            (score_minval, state_minval) = self.min_value(new_state, alpha, beta, depth+1)
+        all_s = list(state.get_all_moves(self.black))
+        shuffle(all_s)
+        for new_state in all_s:
+            (score_minval, _) = self.min_value(new_state, alpha, beta, depth+1)
             max_value = max(v[0], score_minval)
             if max_value == v[0]:
                 pass
             elif max_value == score_minval:
-                v = (score_minval, state_minval)
+                v = (score_minval, new_state)
             if v[0] >= beta:
                 return v
             alpha = max(alpha, v[0])
+        if v[1] == None:
+            self.crashes.append(state)
+            print(flush=True)
+            print("Fucked Up")
+            print(state)
+            print(len(all_s))
+            print(state.pos_marker_dict)
+            print("black in:")
+            print(state.black_markers_in)
+            print("white in:")
+            print(state.white_markers_in)
+            print("black mills")
+            print(state.black_mills)
+            print("white_mills:")
+            print(state.white_mills)
+            print(v[0])
+            print(alpha)
+            print(beta)
+            # print(score_minval)
         return v
             
 
     def min_value(self, state: "Board", alpha: int, beta: int, depth: int) -> Tuple[int, "Board"]:
         if self.cut_off_test(state, depth):
-            return (self.evaluator.evaluate(state, not self.black), state)
+            return (self.evaluator.evaluate(state, self.black), state)
         v = (math.inf, None)
-        for new_state in state.get_all_moves(self.opponent):
-            (score_maxval, state_maxval) = self.max_value(new_state, alpha, beta, depth+1)
+        all_s = list(state.get_all_moves(self.opponent.black))
+        shuffle(all_s)
+        for new_state in all_s:
+            (score_maxval, _) = self.max_value(new_state, alpha, beta, depth+1)
             min_value = min(v[0], score_maxval)
             if min_value == v[0]:
                 pass
             elif min_value == score_maxval:
-                v = (score_maxval, state_maxval)
+                v = (score_maxval, new_state)
             if v[0] <= alpha: return v
             beta = min(beta, v[0])
         return v
@@ -103,6 +131,11 @@ class Evaluator:
             return blocked_blacks - blocked_whites
 
     def _eval_win(self, board: "Board", black: bool) -> int:
+        if board.phase == 2:
+            if len(list(board.get_all_moves(black))) == 0:
+                return -1
+            elif len(list(board.get_all_moves(not black))) == 0:
+                return 1
         score = 0
         if board.phase != 3:
             return score
