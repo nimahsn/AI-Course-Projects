@@ -271,19 +271,26 @@ class Board:
         dic = self.pos_marker_dict
         def helper(m: "Marker"):
             if m is None:
-                return "  "
+                return "[ ]"
             if m.black:
-                return "BB"
+                return "[B]"
             else:
-                return "WW"
+                return "[W]"
         s+="\n"
-        s += "{}-------------{}-------------{}\n".format(helper(dic[(1,1)]), helper(dic[(1,4)]), helper(dic[(1,7)]))
-        s += "-----{}--------{}--------{}-----\n".format(helper(dic[(2,2)]), helper(dic[(2,4)]), helper(dic[(2,6)]))
-        s += "----------{}---{}---{}----------\n".format(helper(dic[(3,3)]), helper(dic[(3,4)]), helper(dic[(3,5)]))
-        s += "{}---{}---{}        {}---{}---{}\n".format(helper(dic[(4,1)]), helper(dic[(4,2)]), helper(dic[(4,3)]),helper(dic[(4,5)]), helper(dic[(4,6)]), helper(dic[(4,7)]))
-        s += "----------{}---{}---{}----------\n".format(helper(dic[(5,3)]), helper(dic[(5,4)]), helper(dic[(5,5)]))
-        s += "-----{}--------{}--------{}-----\n".format(helper(dic[(6,2)]), helper(dic[(6,4)]), helper(dic[(6,6)]))
-        s += "{}-------------{}-------------{}\n".format(helper(dic[(7,1)]), helper(dic[(7,4)]), helper(dic[(7,7)]))
+        s += "   1      2    3     4     5     6     7 \n"
+        s += "1 {}---------------{}---------------{}\n".format(helper(dic[(1,1)]), helper(dic[(1,4)]), helper(dic[(1,7)]))
+        s += "   |                 |                 | \n"
+        s += "2  |     {}--------{}--------{}     | \n".format(helper(dic[(2,2)]), helper(dic[(2,4)]), helper(dic[(2,6)]))
+        s += "   |      |          |          |      | \n"
+        s += "3  |      |   {}---{}---{}   |      | \n".format(helper(dic[(3,3)]), helper(dic[(3,4)]), helper(dic[(3,5)]))
+        s += "   |      |    |           |    |      | \n"
+        s += "4 {}----{}--{}         {}--{}----{}\n".format(helper(dic[(4,1)]), helper(dic[(4,2)]), helper(dic[(4,3)]),helper(dic[(4,5)]), helper(dic[(4,6)]), helper(dic[(4,7)]))
+        s += "   |      |    |           |    |      | \n"
+        s += "5  |      |   {}---{}---{}   |      | \n".format(helper(dic[(5,3)]), helper(dic[(5,4)]), helper(dic[(5,5)]))
+        s += "   |      |          |          |      | \n"
+        s += "6  |     {}--------{}--------{}     | \n".format(helper(dic[(6,2)]), helper(dic[(6,4)]), helper(dic[(6,6)]))
+        s += "   |                 |                 | \n"
+        s += "7 {}---------------{}---------------{}\n".format(helper(dic[(7,1)]), helper(dic[(7,4)]), helper(dic[(7,7)]))
         return s
 
 class Action:
