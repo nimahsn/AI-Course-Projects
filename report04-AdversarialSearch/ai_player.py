@@ -39,25 +39,6 @@ class PlayerAlphaBeta():
             if v[0] >= beta:
                 return v
             alpha = max(alpha, v[0])
-        if v[1] == None:
-            self.crashes.append(state)
-            print(flush=True)
-            print("Fucked Up")
-            print(state)
-            print(len(all_s))
-            print(state.pos_marker_dict)
-            print("black in:")
-            print(state.black_markers_in)
-            print("white in:")
-            print(state.white_markers_in)
-            print("black mills")
-            print(state.black_mills)
-            print("white_mills:")
-            print(state.white_mills)
-            print(v[0])
-            print(alpha)
-            print(beta)
-            # print(score_minval)
         return v
             
 
