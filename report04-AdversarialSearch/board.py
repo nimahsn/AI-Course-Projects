@@ -135,7 +135,6 @@ class Board:
                 board_cpy.last_move_type = ACTION_PLACE
                 yield board_cpy
         
-
     def get_all_moves_phase2(self, black):
         for pos in positions:
             if self.pos_marker_dict[pos] is None:
@@ -209,7 +208,6 @@ class Board:
                     bcp.last_move_type = ACTIION_FLY
                     yield bcp
                     
-
     def is_mill(self, position, black) -> bool:
         for l in mill_dict[position]:
             if self.pos_marker_dict[l[0]] is not None\
@@ -218,7 +216,6 @@ class Board:
                         and self.pos_marker_dict[l[1]].black == black:
                 return True
         return False
-
 
     def remove_opp_marker(self, black) -> "Board":
         found = False

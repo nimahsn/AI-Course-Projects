@@ -116,7 +116,6 @@ class HumanPlayer:
             if bcp.white_markers_in == 3 or bcp.black_markers_in == 3:
                 bcp.phase = 3
         return bcp
-
         
     def _prompt_and_move_phase3(self, board: "b.Board"):
         if self.black and board.black_markers_in > 3:
@@ -163,9 +162,6 @@ class HumanPlayer:
                     bcp.black_mills -= 1
         return bcp
 
-        
-
-    
     def prompt_and_move(self, board: "b.Board") -> "b.Board":
         if board.phase == 1:
             return self._prompt_and_move_phase1(board)

@@ -1,12 +1,12 @@
 from board import *
-from ai_player import PlayerAlphaBeta, Evaluator
+from ai_player import AlphaBetaPlayer, Evaluator
 from human_player import HumanPlayer
 
-def ai_vs_ai(depth=4):
+def ai_vs_ai(depth_black=3, depth_white=3):
     b = Board()
     evalu = Evaluator()
-    player_black = PlayerAlphaBeta(black = True, cut_off_depth=depth, evaluator=evalu)
-    player_white = PlayerAlphaBeta(black = False, cut_off_depth=depth, evaluator=evalu,  opponent=player_black)
+    player_black = AlphaBetaPlayer(black = True, cut_off_depth=depth_black, evaluator=evalu)
+    player_white = AlphaBetaPlayer(black = False, cut_off_depth=depth_white, evaluator=evalu,  opponent=player_black)
     player_black.opponent = player_white
     player = player_black
     while not b.is_terminal():
@@ -32,7 +32,6 @@ def ai_vs_ai(depth=4):
         else:
             print("turn: white")
             player = player_black
-        print(score)
         print("action: "+action)
         print(b)
         print("next phase: "+ str(b.phase))
@@ -41,11 +40,9 @@ def ai_vs_ai(depth=4):
 def human_vs_ai(depth=5):
     b = Board()
     evalu = Evaluator()
-    player_black_ai = PlayerAlphaBeta(black = True, cut_off_depth=depth, evaluator=evalu)
+    player_black_ai = AlphaBetaPlayer(black = True, cut_off_depth=depth, evaluator=evalu)
     player_white_human = HumanPlayer(black = False)
     player_black_ai.opponent = player_white_human
-
-    ##
     while not b.is_terminal():
         print("phase: " + str(b.phase))
         print("pc turn (black)")
@@ -76,4 +73,4 @@ def human_vs_ai(depth=5):
         print("---------------------------------------------")
     print("terminal state")
 
-    
+human_vs_ai()

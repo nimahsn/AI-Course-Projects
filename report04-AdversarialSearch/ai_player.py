@@ -1,25 +1,16 @@
 from typing import List, Tuple
-from board import Board, Marker, ACTION_FLY_MILL, ACTION_MOVE, ACTION_MOVE_MILL, ACTION_PLACE, ACTION_PLACE_MILL, ACTIION_FLY, positions, mill_dict
+from board import *
 import math
 from random import shuffle
 
-class PlayerAlphaBeta():
-    def __init__(self, black: bool, evaluator: "Evaluator", cut_off_depth: int = 3, opponent: "PlayerAlphaBeta" = None) -> None:
+class AlphaBetaPlayer:
+    def __init__(self, black: bool, evaluator: "Evaluator", cut_off_depth: int = 3, opponent: "AlphaBetaPlayer" = None) -> None:
         self.black = black
-        self.markers_out = 9
-        self.markers_in = 0
-        self.markers_lost = 0
-        self.markers_captured = 0
         self.opponent = opponent
         self.cut_depth = cut_off_depth
         self.evaluator = evaluator
-        self._alpha = 0
-        self._beta = 0
-        self.crashes = []
 
     def alpha_beta_search(self, state: "Board") -> "Board":
-        # self._alpha = -math.inf
-        # self._beta = math.inf
         score, new_state = self.max_value(state, -math.inf, math.inf, 1)
         return score, new_state
 
@@ -70,12 +61,6 @@ class PlayerAlphaBeta():
 class Evaluator:
     def __init__(self) -> None:
         pass
-
-    def register_players(self, black_player: "PlayerAlphaBeta", white_player: "PlayerAlphaBeta"= None):
-        self.black_player = black_player
-        self.white_player = white_player
-        self.black_markers: List["Marker"] = []
-        self.white_markers: List["Marker"] = []
     
     def _eval_diff_markers_in(self, board: "Board", black: bool) -> int:
         diff = board.black_markers_in - board.white_markers_in
@@ -163,17 +148,17 @@ class Evaluator:
         if board.phase == 1:
             return 20*self._eval_last_mill(board, black) +\
                 25*self._eval_diff_mill_count(board, black) +\
-                    2*self._eval_diff_blocked_markers(board, black) +\
+                    5*self._eval_diff_blocked_markers(board, black) +\
                         5*self._eval_diff_markers_in(board, black) +\
                             8*self._eval_diff_double(board, black)
 
         elif board.phase == 2:
-            return 15*self._eval_last_mill(board, black) +\
-                35*self._eval_diff_mill_count(board, black) +\
+            return 25*self._eval_last_mill(board, black) +\
+                30*self._eval_diff_mill_count(board, black) +\
                     10*self._eval_diff_blocked_markers(board, black) +\
                         15*self._eval_diff_markers_in(board, black) +\
                             2000*self._eval_win(board, black)
 
         elif board.phase == 3:
             return 3000*self._eval_win(board, black) +\
-                18*self._eval_last_mill(board, black)
+                30*self._eval_last_mill(board, black)
