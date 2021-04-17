@@ -21,6 +21,9 @@ class Sudoku():
         for out in self.out_of_domain_dict[index]:
             d.remove(out)
         return d
+
+    def get_domain_size(self, index):
+        return 9 - len(self.out_of_domain_dict[index])
         
     def constraint_check(self, index, value) -> bool:
         for neighbor in self.neighbors[index]:
