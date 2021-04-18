@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from sudoku import Sudoku
 
 class BactrackBase():
     @abstractmethod
@@ -22,7 +23,7 @@ class BactrackBase():
         pass
 
     @abstractmethod
-    def remove_value(self, csp, var):
+    def remove_assignment(self, csp, var):
         pass
 
     @abstractmethod
@@ -41,14 +42,64 @@ class BactrackBase():
         if self.is_complete(csp): return csp
         var = self.select_unassigned_variable(csp)
         for value in self.order_domain_values(csp, var):
+            inferences = None
             if self.is_consistent(csp, var, value):
                 self.add_assignment(csp, var, value)
                 inferences = self.inference(csp, var, value)
-                if inferences:
+                if inferences != False:
                     self.apply_inferences(csp, inferences)
                     result = self.backtrack(csp)
                     if result:
                         return result
-            self.remove_value(csp, var)
-            self.revert_inference(self, inferences)
+            self.remove_assignment(csp, var)
+            if inferences:
+                self.revert_inference(csp, inferences)
         return False
+
+class SudokuBacktrackForwardMRV(BactrackBase):
+    def __init__(self) -> None:
+        super().__init__()
+        
+    def is_complete(self, csp: "Sudoku"):
+        if len(csp.variables) == 0:
+            return True
+        return False
+
+    def select_unassigned_variable(self, csp: "Sudoku"):
+        return min(csp.variables, key=lambda var: len(csp.domain[var]))        
+
+    def order_domain_values(self, csp: "Sudoku", var):
+        return csp.domain[var]
+    
+    def is_consistent(self, csp: "Sudoku", var, value):
+        return csp.constraint_check(var, value)
+
+    def inference(self, csp: "Sudoku", var, value):
+        forward_check_domain = {}
+        for neighbor in csp.neighbors[var]:
+            if neighbor not in csp.variables:
+                continue
+            if value not in csp.domain[neighbor]:
+                continue
+            elif len(csp.domain[neighbor]) == 1:
+                return False
+            else:
+                forward_check_domain[neighbor] = value
+        return forward_check_domain
+
+
+    def remove_assignment(self, csp: "Sudoku", var):
+        csp.board[var[0]][var[1]] = 0
+        csp.variables.add(var)
+    
+    def add_assignment(self, csp: "Sudoku", var, value):
+        csp.board[var[0]][var[1]] = value
+        csp.variables.remove(var)
+
+    def apply_inferences(self, csp: "Sudoku", inferences: dict):
+        for var in inferences.keys():
+            csp.domain[var].remove(inferences[var])
+
+    def revert_inference(self, csp: "Sudoku", inferences: dict):
+        for var in inferences.keys():
+            csp.domain[var].add(inferences[var])
