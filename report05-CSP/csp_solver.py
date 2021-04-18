@@ -2,6 +2,10 @@ from abc import abstractmethod
 from sudoku import Sudoku
 
 class BactrackBase():
+    def __init__(self) -> None:
+        self.discovered_nodes = 0
+        self.failed_branches = 0
+
     @abstractmethod
     def is_complete(self, csp):
         pass
@@ -39,6 +43,7 @@ class BactrackBase():
         pass
 
     def backtrack(self, csp):
+        self.discovered_nodes += 1
         if self.is_complete(csp): return csp
         var = self.select_unassigned_variable(csp)
         for value in self.order_domain_values(csp, var):
@@ -54,11 +59,14 @@ class BactrackBase():
             self.remove_assignment(csp, var)
             if inferences:
                 self.revert_inference(csp, inferences)
+        self.failed_branches += 1
         return False
 
 class SudokuBacktrackForwardMRV(BactrackBase):
     def __init__(self) -> None:
         super().__init__()
+        self.forward_check_omits = 0
+        self.forward_check_cut = 0
         
     def is_complete(self, csp: "Sudoku"):
         if len(csp.variables) == 0:
@@ -82,11 +90,12 @@ class SudokuBacktrackForwardMRV(BactrackBase):
             if value not in csp.domain[neighbor]:
                 continue
             elif len(csp.domain[neighbor]) == 1:
+                self.forward_check_cut += 1
                 return False
             else:
                 forward_check_domain[neighbor] = value
+        self.forward_check_omits += len(forward_check_domain)
         return forward_check_domain
-
 
     def remove_assignment(self, csp: "Sudoku", var):
         csp.board[var[0]][var[1]] = 0
