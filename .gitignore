@@ -5,3 +5,10 @@ report02-LocalSearch/__pycache__/problems.cpython-38.pyc
 .idea
 *.png
 *.txt
+*/checkpoints
+*/tensorboard
+*/amazon_summaries_embedding
+*/ml-10M100K
+*/movielens10_tags_embedding
+*.h5
+*.gz
