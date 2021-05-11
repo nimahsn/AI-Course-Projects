@@ -12,3 +12,8 @@ report02-LocalSearch/__pycache__/problems.cpython-38.pyc
 */movielens10_tags_embedding
 *.h5
 *.gz
+*.jpg
+*.csv
+*.joblib
+*.pkl
+report06-Recommender/movielens10_users_embedding
