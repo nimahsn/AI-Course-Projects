@@ -17,3 +17,4 @@ report02-LocalSearch/__pycache__/problems.cpython-38.pyc
 *.joblib
 *.pkl
 report06-Recommender/movielens10_users_embedding
+report07-ML_benchmark/sonar.all-data
